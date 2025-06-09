@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  fullName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  workOrders       WorkOrder[] @relation("CreatedBy")
+  assignedOrders   WorkOrder[] @relation("AssignedTo")
+}
+
+model WorkOrder {
+  id            String    @id @default(cuid())
+  customerId    String
+  title         String
+  description   String?   @db.Text
+  deviceType    String
+  brand         String
+  model         String
+  serialNumber  String
+  problem       String    @db.Text
+  priority      String    @default("MEDIUM")
+  status        String    @default("PENDING")
+  startDate     DateTime?
+  endDate       DateTime?
+  amount        Float?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  createdBy    User    @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById  String
+  assignedTo   User?   @relation("AssignedTo", fields: [assignedToId], references: [id])
+  assignedToId String?
+  customer     Customer @relation(fields: [customerId], references: [id])
+
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([customerId])
+}
+
+model Customer {
+  id         String      @id @default(cuid())
+  name       String
+  phone      String?
+  email      String?
+  address    String?     @db.Text
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  workOrders WorkOrder[]
+} 
