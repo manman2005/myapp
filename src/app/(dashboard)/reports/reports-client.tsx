@@ -36,6 +36,7 @@ export default function ReportsClient({
   totalCustomers,
   recentWorkOrders
 }: ReportsClientProps) {
+
   const [period, setPeriod] = useState<'daily' | 'monthly' | 'yearly'>('monthly')
   const [searchTerm, setSearchTerm] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)

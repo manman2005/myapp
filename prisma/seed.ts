@@ -5,13 +5,13 @@ const prisma = new PrismaClient()
 
 async function main() {
   // สร้างผู้ใช้
-  const password = await hash('password123', 12)
+  const password = await hash('admin123', 12) // รหัสผ่านใหม่สำหรับแอดมิน
 
   const user1 = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
+    where: { email: 'admin1@example.com' },
     update: {},
     create: {
-      email: 'admin@example.com',
+      email: 'admin1@example.com',
       password,
       fullName: 'Admin User',
     },

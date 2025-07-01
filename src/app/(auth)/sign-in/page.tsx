@@ -123,7 +123,8 @@ export default function SignIn() {
             </button>
           </div>
 
-          <div className="flex items-center justify-center">
+          
+        <div className="flex items-center justify-center">
             <div className="text-sm">
               <Link
                 href="/sign-up"

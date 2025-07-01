@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useCustomer } from "@/contexts/CustomerContext";
-import { useWorkOrders } from "@/contexts/WorkOrderContext";
+import { useWorkOrder } from '@/contexts/WorkOrderContext'
 import { useRouter } from "next/navigation";
 
 export default function WorkOrderDetailsPage({
@@ -19,7 +19,7 @@ export default function WorkOrderDetailsPage({
   params: { id: string };
 }) {
   const router = useRouter();
-  const { getWorkOrder } = useWorkOrders();
+  const { getWorkOrder } = useWorkOrder();
   const { getCustomer } = useCustomer();
   const id = React.use(params).id;
   const workOrder = getWorkOrder(id);

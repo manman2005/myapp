@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCustomer } from "@/contexts/CustomerContext";
-import { useWorkOrders } from "@/contexts/WorkOrderContext";
+import { useWorkOrder } from '@/contexts/WorkOrderContext'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -70,7 +70,7 @@ const formSchema = z.object({
 export default function NewWorkOrderPage() {
   const router = useRouter();
   const { state: { customers } } = useCustomer();
-  const { addWorkOrder, error } = useWorkOrders();
+  const { createWorkOrder, error } = useWorkOrder();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: session } = useSession();
 

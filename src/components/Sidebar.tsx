@@ -50,7 +50,7 @@ export function Sidebar() {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true)
-      await signOut()
+      await signOut({ callbackUrl: '/sign-in' })
     } catch (error) {
       console.error('Error signing out:', error)
       setIsSigningOut(false)

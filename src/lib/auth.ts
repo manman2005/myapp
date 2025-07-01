@@ -7,9 +7,6 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
-  pages: {
-    signIn: '/sign-in',
-  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -19,7 +16,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          throw new Error("กรุณากรอกอีเมลและรหัสผ่าน")
         }
 
         const user = await prisma.user.findUnique({
@@ -35,15 +32,16 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user) {
-          return null
+          throw new Error("อีเมลหรือรหัสผ่านไม่ถูกต้อง")
         }
 
         const isPasswordValid = await compare(credentials.password, user.password)
 
         if (!isPasswordValid) {
-          return null
+          throw new Error("อีเมลหรือรหัสผ่านไม่ถูกต้อง")
         }
 
+        console.log("User authenticated successfully:", user.email)
         return {
           id: user.id,
           email: user.email,
@@ -58,7 +56,6 @@ export const authOptions: NextAuthOptions = {
         session.user = {
           ...session.user,
           id: token.sub || token.id as string,
-          name: token.name as string,
           email: token.email as string,
         }
       }
@@ -67,7 +64,6 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.name = user.name
         token.email = user.email
       }
       return token
