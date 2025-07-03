@@ -1,183 +1,82 @@
-"use client";
+// app/work-orders/[id]/page.tsx
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useCustomer } from "@/contexts/CustomerContext";
-import { useWorkOrder } from '@/contexts/WorkOrderContext'
-import { useRouter } from "next/navigation";
-
-export default function WorkOrderDetailsPage({
+export default async function WorkOrderDetailsPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const router = useRouter();
-  const { getWorkOrder } = useWorkOrder();
-  const { getCustomer } = useCustomer();
-  const id = React.use(params).id;
-  const workOrder = getWorkOrder(id);
-  const customer = workOrder ? getCustomer(workOrder.customerId) : null;
+  const workOrder = await prisma.workOrder.findUnique({
+    where: { id: params.id },
+    include: {
+      assignedTo: true,
+      createdBy: true,
+    },
+  });
 
-  if (!workOrder || !customer) {
-    return (
-      <div className="container mx-auto py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>ไม่พบข้อมูล</CardTitle>
-            <CardDescription>ไม่พบข้อมูลงานซ่อมที่ต้องการ</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => router.back()}>ย้อนกลับ</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (!workOrder) notFound();
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "รอดำเนินการ";
-      case "in_progress":
-        return "กำลังดำเนินการ";
-      case "completed":
-        return "เสร็จสิ้น";
-      case "cancelled":
-        return "ยกเลิก";
-      default:
-        return status;
-    }
+  const statusMap: Record<string, { label: string; color: string }> = {
+    pending: { label: "รอดำเนินการ", color: "bg-yellow-600 text-white" },
+    in_progress: { label: "กำลังดำเนินการ", color: "bg-blue-600 text-white" },
+    completed: { label: "เสร็จสิ้น", color: "bg-green-600 text-white" },
+    cancelled: { label: "ยกเลิก", color: "bg-red-600 text-white" },
   };
+  const status = statusMap[workOrder.status] || { label: workOrder.status, color: "bg-gray-600 text-white" };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "in_progress":
-        return "bg-blue-100 text-blue-800";
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  return (  
+    <div className="min-h-screen bg-[#151b27] py-10">
+      <div className="max-w-3xl mx-auto bg-[#232b3e] rounded-lg shadow-lg p-8">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-bold text-white">
+            งานซ่อม #{workOrder.id} - {workOrder.title}
+          </h1>
+          <span className={`px-3 py-1 rounded-full text-sm font-bold ${status.color}`}>
+            {status.label}
+          </span>
+        </div>
 
-  return (
-    <div className="container mx-auto py-10">
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>รายละเอียดงานซ่อม {workOrder.id}</CardTitle>
-              <CardDescription>
-                วันที่รับงาน:{" "}
-                {new Date(workOrder.createdAt).toLocaleDateString("th-TH")}
-              </CardDescription>
-            </div>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                workOrder.status
-              )}`}
-            >
-              {getStatusText(workOrder.status)}
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">ข้อมูลลูกค้า</h3>
-              <div className="space-y-2">
-                <p>
-                  <span className="font-medium">ชื่อ-นามสกุล:</span>{" "}
-                  {customer.fullName}
-                </p>
-                <p>
-                  <span className="font-medium">อีเมล:</span> {customer.email}
-                </p>
-                <p>
-                  <span className="font-medium">เบอร์โทรศัพท์:</span>{" "}
-                  {customer.phone}
-                </p>
-                <p>
-                  <span className="font-medium">ที่อยู่:</span> {customer.address}
-                </p>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">ข้อมูลอุปกรณ์</h3>
-              <div className="space-y-2">
-                <p>
-                  <span className="font-medium">ประเภท:</span>{" "}
-                  {workOrder.deviceType}
-                </p>
-                <p>
-                  <span className="font-medium">ยี่ห้อ:</span> {workOrder.brand}
-                </p>
-                <p>
-                  <span className="font-medium">รุ่น:</span> {workOrder.model}
-                </p>
-                <p>
-                  <span className="font-medium">หมายเลขเครื่อง:</span>{" "}
-                  {workOrder.serialNumber}
-                </p>
-              </div>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
-            <h3 className="text-lg font-semibold mb-4">รายละเอียดการซ่อม</h3>
-            <div className="space-y-4">
-              <div>
-                <p className="font-medium">อาการเสีย/ปัญหา:</p>
-                <p className="mt-1 p-4 bg-gray-50 rounded-md">
-                  {workOrder.problem}
-                </p>
-              </div>
-              {workOrder.notes && (
-                <div>
-                  <p className="font-medium">หมายเหตุ:</p>
-                  <p className="mt-1 p-4 bg-gray-50 rounded-md">
-                    {workOrder.notes}
-                  </p>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="font-medium">ค่าซ่อมโดยประมาณ:</p>
-                  <p className="mt-1 text-lg">
-                    {workOrder.estimatedCost.toLocaleString()} บาท
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium">ค่าซ่อมจริง:</p>
-                  <p className="mt-1 text-lg">
-                    {workOrder.actualCost.toLocaleString()} บาท
-                  </p>
-                </div>
-              </div>
+            <h2 className="font-bold text-lg mb-2 text-white">ข้อมูลอุปกรณ์</h2>
+            <div className="space-y-1 text-gray-200">
+              <div>ประเภท: <span className="font-semibold">{workOrder.deviceType}</span></div>
+              <div>ยี่ห้อ: <span className="font-semibold">{workOrder.brand}</span></div>
+              <div>รุ่น: <span className="font-semibold">{workOrder.model}</span></div>
+              <div>หมายเลขเครื่อง: <span className="font-semibold">{workOrder.serialNumber}</span></div>
             </div>
           </div>
-
-          <div className="flex justify-end space-x-4 pt-4">
-            <Button variant="outline" onClick={() => router.back()}>
-              ย้อนกลับ
-            </Button>
-            <Button onClick={() => router.push(`/work-orders/${id}/edit`)}>
-              แก้ไขข้อมูล
-            </Button>
+          <div>
+            <h2 className="font-bold text-lg mb-2 text-white">ข้อมูลอื่นๆ</h2>
+            <div className="space-y-1 text-gray-200">
+              <div>ระดับความสำคัญ: <span className="font-semibold">{workOrder.priority}</span></div>
+              <div>โดย: <span className="font-semibold">{workOrder.createdBy?.fullName || "-"}</span></div>
+              <div>วันที่เริ่ม: <span className="font-semibold">{workOrder.startDate ? new Date(workOrder.startDate).toLocaleDateString("th-TH") : "-"}</span></div>
+              <div>วันที่สิ้นสุด: <span className="font-semibold">{workOrder.endDate ? new Date(workOrder.endDate).toLocaleDateString("th-TH") : "-"}</span></div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="mb-6">
+          <h2 className="font-bold text-lg mb-2 text-white">รายละเอียดการซ่อม</h2>
+          <div className="bg-[#1a2132] rounded p-4 mb-2 text-gray-200">
+            <span className="font-semibold">ปัญหา:</span> {workOrder.problem}
+          </div>
+          <div className="text-right text-lg font-bold text-green-400">
+            ค่าใช้จ่าย: {workOrder.amount?.toLocaleString() || "-"} บาท
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <a
+            href={`/work-orders/${workOrder.id}/edit`}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-bold"
+          >
+            แก้ไขข้อมูล
+          </a>
+        </div>
+      </div>
     </div>
   );
-} 
+}

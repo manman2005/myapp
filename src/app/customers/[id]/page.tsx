@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useCustomer } from "@/contexts/CustomerContext";
-import { useWorkOrders } from "@/contexts/WorkOrderContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -21,7 +20,7 @@ export default function CustomerDetailsPage({
 }) {
   const router = useRouter();
   const { getCustomer } = useCustomer();
-  const id = React.use(params).id;
+  const id = params.id;
   const customer = getCustomer(id);
 
   if (!customer) {
@@ -48,7 +47,8 @@ export default function CustomerDetailsPage({
             <div>
               <CardTitle>ข้อมูลลูกค้า {customer.id}</CardTitle>
               <CardDescription>
-                สมัครเมื่อ: {new Date(customer.createdAt).toLocaleDateString("th-TH")}
+                สมัครเมื่อ:{" "}
+                {new Date(customer.createdAt).toLocaleDateString("th-TH")}
               </CardDescription>
             </div>
           </div>
@@ -69,7 +69,8 @@ export default function CustomerDetailsPage({
                 {customer.phone}
               </p>
               <p>
-                <span className="font-medium">ที่อยู่:</span> {customer.address}
+                <span className="font-medium">ที่อยู่:</span>{" "}
+                {customer.address}
               </p>
             </div>
           </div>
@@ -107,10 +108,10 @@ export default function CustomerDetailsPage({
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {order.status}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <td>
                           <Link
                             href={`/work-orders/${order.id}`}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-bold"
                           >
                             ดูรายละเอียด
                           </Link>
@@ -137,4 +138,4 @@ export default function CustomerDetailsPage({
       </Card>
     </div>
   );
-} 
+}
