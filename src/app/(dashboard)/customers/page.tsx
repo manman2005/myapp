@@ -97,15 +97,22 @@ export default function CustomersPage() {
                   <TableCell>
                     {new Date(customer.createdAt).toLocaleDateString("th-TH")}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="flex gap-2">
                     <Button
-                    variant="default"
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => router.push(`/customers/${customer.id}`)}
-                  >
-                    ดูรายละเอียด
-                  </Button>
+                      variant="default"
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                      onClick={() => router.push(`/customers/${customer.id}`)}
+                    >
+                      ดูรายละเอียด
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/customers/${customer.id}/edit`)}
+                    >
+                      แก้ไข
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

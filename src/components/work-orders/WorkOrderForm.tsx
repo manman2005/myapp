@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -28,9 +28,10 @@ type WorkOrderFormData = z.infer<typeof workOrderSchema>
 
 interface WorkOrderFormProps {
   onSubmit: (data: WorkOrderFormData) => Promise<boolean>
+  initialData?: WorkOrderFormData
 }
 
-export function WorkOrderForm({ onSubmit }: WorkOrderFormProps) {
+export function WorkOrderForm({ onSubmit, initialData }: WorkOrderFormProps) {
   const { state: { customers } } = useCustomer()
   const [isSubmitting, setIsSubmitting] = useState(false)
   
@@ -41,12 +42,22 @@ export function WorkOrderForm({ onSubmit }: WorkOrderFormProps) {
     formState: { errors, isValid },
   } = useForm<WorkOrderFormData>({
     resolver: zodResolver(workOrderSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       priority: 'MEDIUM',
       status: 'PENDING',
     },
     mode: 'onChange',
   })
+
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        ...initialData,
+        startDate: initialData.startDate ? new Date(initialData.startDate).toISOString().split('T')[0] : '',
+        endDate: initialData.endDate ? new Date(initialData.endDate).toISOString().split('T')[0] : '',
+      })
+    }
+  }, [initialData, reset])
 
   const debouncedSubmit = useDebouncedCallback(async (data: WorkOrderFormData) => {
     if (isSubmitting) return

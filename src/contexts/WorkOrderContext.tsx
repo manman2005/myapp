@@ -215,7 +215,7 @@ export function WorkOrderProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const response = await fetch(`/api/work-orders/${id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
