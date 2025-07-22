@@ -21,7 +21,32 @@ export default function CustomerDetailsPage({
   const router = useRouter();
   const { getCustomer } = useCustomer();
   const id = params.id;
-  const customer = getCustomer(id);
+  const [customerData, setCustomerData] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchCustomer = async () => {
+      setLoading(true);
+      const fetchedCustomer = await getCustomer(id);
+      setCustomerData(fetchedCustomer);
+      setLoading(false);
+    };
+    fetchCustomer();
+  }, [id, getCustomer]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-10">
+        <Card>
+          <CardHeader>
+            <CardTitle>กำลังโหลด...</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
+  const customer = customerData;
 
   if (!customer) {
     return (
