@@ -60,7 +60,7 @@ export default function WorkOrdersClient() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">รายการงานซ่อม</h1>
-          <Button onClick={() => setIsDialogOpen(true)} disabled={!customers || customers.length === 0}>
+          <Button onClick={() => setIsDialogOpen(true)} disabled={!customers || customers.length === 0} className="bg-green-500 hover:bg-green-600 text-white">
             สร้างงานใหม่
           </Button>
         </div>
@@ -87,7 +87,7 @@ export default function WorkOrdersClient() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">รายการงานซ่อม</h1>
-        <Button onClick={() => setIsDialogOpen(true)} disabled={!customers || customers.length === 0}>
+        <Button onClick={() => setIsDialogOpen(true)} disabled={!customers || customers.length === 0} className="bg-green-500 hover:bg-green-600 text-white">
           สร้างงานใหม่
         </Button>
       </div>

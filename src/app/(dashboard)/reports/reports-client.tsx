@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   BarChart,
   Bar,
@@ -40,6 +40,31 @@ export default function ReportsClient({
   const [period, setPeriod] = useState<'daily' | 'monthly' | 'yearly'>('monthly')
   const [searchTerm, setSearchTerm] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [chartData, setChartData] = useState<any[]>([])
+  const [chartLoading, setChartLoading] = useState(true)
+  const [chartError, setChartError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    const fetchChartData = async () => {
+      setChartLoading(true)
+      setChartError(null)
+      try {
+        const response = await fetch(`/api/reports?period=${period}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch chart data')
+        }
+        const data = await response.json()
+        setChartData(data)
+      } catch (err: any) {
+        setChartError(err.message)
+      } finally {
+        setChartLoading(false)
+      }
+    }
+    fetchChartData()
+  }, [period])
 
   const handleCreateWorkOrder = async (data: any) => {
     try {
@@ -62,32 +87,7 @@ export default function ReportsClient({
     }
   }
 
-  // ข้อมูลตัวอย่างสำหรับกราฟ
-  const dailyData = [
-    { name: "จันทร์", workOrders: 4, income: 2000 },
-    { name: "อังคาร", workOrders: 3, income: 1500 },
-    { name: "พุธ", workOrders: 2, income: 9500 },
-    { name: "พฤหัส", workOrders: 5, income: 4000 },
-    { name: "ศุกร์", workOrders: 4, income: 5000 },
-    { name: "เสาร์", workOrders: 3, income: 3500 },
-    { name: "อาทิตย์", workOrders: 2, income: 4200 },
-  ]
-
-  const monthlyData = [
-    { name: "ม.ค.", workOrders: 20, income: 24000 },
-    { name: "ก.พ.", workOrders: 15, income: 13980 },
-    { name: "มี.ค.", workOrders: 25, income: 98000 },
-    { name: "เม.ย.", workOrders: 18, income: 39080 },
-    { name: "พ.ค.", workOrders: 22, income: 48000 },
-    { name: "มิ.ย.", workOrders: 30, income: 38000 },
-  ]
-
-  const yearlyData = [
-    { name: "2021", workOrders: 240, income: 240000 },
-    { name: "2022", workOrders: 300, income: 398000 },
-    { name: "2023", workOrders: 280, income: 280000 },
-    { name: "2024", workOrders: 100, income: 108000 },
-  ]
+  
 
   // ฟังก์ชันสำหรับแปลงสถานะเป็นภาษาไทย
   const getStatusText = (status: string) => {
@@ -121,16 +121,17 @@ export default function ReportsClient({
     }
   }
 
-  // ฟังก์ชันสำหรับข้อมูลกราฟ
   const getChartData = () => {
-    switch (period) {
-      case 'monthly':
-        return monthlyData
-      case 'yearly':
-        return yearlyData
-      default:
-        return dailyData
-    }
+    return chartData
+  }
+
+  // Component to handle client-side date formatting to prevent hydration errors
+  const FormattedDate = ({ dateString }: { dateString: Date }) => {
+    const [formatted, setFormatted] = useState('')
+    useEffect(() => {
+      setFormatted(new Date(dateString).toLocaleDateString('th-TH'))
+    }, [dateString])
+    return <>{formatted}</>
   }
 
   // กรองรายการตามคำค้นหา
@@ -146,7 +147,7 @@ export default function ReportsClient({
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-white">รายงานสรุป</h2>
-            <Button onClick={() => setIsDialogOpen(true)} className="w-full sm:w-auto">สร้างงานใหม่</Button>
+            <Button onClick={() => setIsDialogOpen(true)} className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white">สร้างงานใหม่</Button>
           </div>
           
           {/* Stats Cards */}
@@ -209,53 +210,69 @@ export default function ReportsClient({
 
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            {/* Work Orders Chart */}
-            <div className="bg-[#1e293b] p-4 sm:p-6 rounded-lg">
-              <h3 className="text-base sm:text-lg font-medium mb-4 text-white">สถิติงานซ่อม</h3>
-              <div className="h-60 sm:h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={getChartData()} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="name" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#1F2937',
-                        border: 'none',
-                        borderRadius: '0.5rem',
-                        color: '#fff',
-                        fontSize: '12px'
-                      }}
-                    />
-                    <Bar dataKey="workOrders" fill="#3B82F6" />
-                  </BarChart>
-                </ResponsiveContainer>
+            {chartLoading ? (
+              <div className="col-span-full bg-[#1e293b] p-4 sm:p-6 rounded-lg text-center text-gray-400">
+                กำลังโหลดข้อมูลกราฟ...
               </div>
-            </div>
+            ) : chartError ? (
+              <div className="col-span-full bg-[#1e293b] p-4 sm:p-6 rounded-lg text-center text-red-500">
+                เกิดข้อผิดพลาดในการโหลดข้อมูลกราฟ: {chartError}
+              </div>
+            ) : (
+              <>
+                {/* Work Orders Chart */}
+                <div className="bg-[#1e293b] p-4 sm:p-6 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-medium mb-4 text-white">สถิติงานซ่อม</h3>
+                  <div className="h-60 sm:h-80">
+                    {mounted && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={getChartData()} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                          <XAxis dataKey="name" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
+                          <YAxis stroke="#9CA3AF" tick={{ fontSize: 12 }} />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: '#1F2937',
+                              border: 'none',
+                              borderRadius: '0.5rem',
+                              color: '#fff',
+                              fontSize: '12px'
+                            }}
+                          />
+                          <Bar dataKey="workOrders" fill="#3B82F6" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
 
-            {/* Income Chart */}
-            <div className="bg-[#1e293b] p-4 sm:p-6 rounded-lg">
-              <h3 className="text-base sm:text-lg font-medium mb-4 text-white">สถิติรายได้</h3>
-              <div className="h-60 sm:h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={getChartData()} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="name" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#1F2937',
-                        border: 'none',
-                        borderRadius: '0.5rem',
-                        color: '#fff',
-                        fontSize: '12px'
-                      }}
-                    />
-                    <Line type="monotone" dataKey="income" stroke="#10B981" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+                {/* Income Chart */}
+                <div className="bg-[#1e293b] p-4 sm:p-6 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-medium mb-4 text-white">สถิติรายได้</h3>
+                  <div className="h-60 sm:h-80">
+                    {mounted && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={getChartData()} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                          <XAxis dataKey="name" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
+                          <YAxis stroke="#9CA3AF" tick={{ fontSize: 12 }} />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: '#1F2937',
+                              border: 'none',
+                              borderRadius: '0.5rem',
+                              color: '#fff',
+                              fontSize: '12px'
+                            }}
+                          />
+                          <Line type="monotone" dataKey="income" stroke="#10B981" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Recent Work Orders */}
@@ -298,7 +315,7 @@ export default function ReportsClient({
                           </span>
                         </td>
                         <td className="p-2 text-xs sm:text-sm text-gray-300">
-                          {new Date(order.createdAt).toLocaleDateString('th-TH')}
+                          <FormattedDate dateString={order.createdAt} />
                         </td>
                       </tr>
                     ))}

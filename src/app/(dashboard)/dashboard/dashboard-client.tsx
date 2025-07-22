@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { User, WorkOrder } from '@prisma/client'
 import { Input } from '@/components/ui/input'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, ResponsiveContainer } from 'recharts'
@@ -20,27 +20,25 @@ export default function DashboardClient({
 }: DashboardClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
-  // ข้อมูลสำหรับกราฟแท่ง
-  const dailyTasksData = [
-    { day: 'จันทร์', tasks: 4 },
-    { day: 'อังคาร', tasks: 3 },
-    { day: 'พุธ', tasks: 2 },
-    { day: 'พฤหัส', tasks: 5 },
-    { day: 'ศุกร์', tasks: 4 },
-    { day: 'เสาร์', tasks: 3 },
-    { day: 'อาทิตย์', tasks: 2 },
-  ]
+  const [dailyTasksData, setDailyTasksData] = useState([])
+  const [dailyIncomeData, setDailyIncomeData] = useState([])
 
-  // ข้อมูลสำหรับกราฟเส้น
-  const dailyIncomeData = [
-    { day: 'จันทร์', income: 2000 },
-    { day: 'อังคาร', income: 1500 },
-    { day: 'พุธ', income: 9500 },
-    { day: 'พฤหัส', income: 4000 },
-    { day: 'ศุกร์', income: 5000 },
-    { day: 'เสาร์', income: 3500 },
-    { day: 'อาทิตย์', income: 4000 },
-  ]
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const tasksRes = await fetch('/api/reports?period=daily')
+        const tasksData = await tasksRes.json()
+        setDailyTasksData(tasksData)
+
+        const incomeRes = await fetch('/api/reports?period=daily')
+        const incomeData = await incomeRes.json()
+        setDailyIncomeData(incomeData)
+      } catch (error) {
+        console.error('Failed to fetch reports:', error)
+      }
+    }
+    fetchReports()
+  }, [])
 
   // กรองรายการงานตามคำค้นหา
   const filteredWorkOrders = recentWorkOrders.filter(order =>
@@ -69,8 +67,8 @@ export default function DashboardClient({
 
         <div className="bg-[#1e293b] rounded-lg p-4">
           <h3 className="text-lg font-medium mb-2 text-gray-200">งานทั้งหมด</h3>
-          <p className="text-2xl font-bold text-purple-500">5</p>
-          <p className="text-sm text-gray-400">งานใหม่ 5 รายการ</p>
+          <p className="text-2xl font-bold text-purple-500">{recentWorkOrders.length}</p>
+          <p className="text-sm text-gray-400">งานใหม่ {recentWorkOrders.length} รายการ</p>
         </div>
 
         <div className="bg-[#1e293b] rounded-lg p-4">
@@ -86,7 +84,7 @@ export default function DashboardClient({
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={dailyTasksData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="day" stroke="#9ca3af" />
+              <XAxis dataKey="name" stroke="#9ca3af" />
               <YAxis stroke="#9ca3af" />
               <Tooltip 
                 contentStyle={{ 
@@ -97,7 +95,7 @@ export default function DashboardClient({
                 }}
               />
               <Legend wrapperStyle={{ color: '#9ca3af' }} />
-              <Bar dataKey="tasks" fill="#3b82f6" name="จำนวนงาน" />
+              <Bar dataKey="workOrders" fill="#3b82f6" name="จำนวนงาน" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -107,7 +105,7 @@ export default function DashboardClient({
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={dailyIncomeData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="day" stroke="#9ca3af" />
+              <XAxis dataKey="name" stroke="#9ca3af" />
               <YAxis stroke="#9ca3af" />
               <Tooltip 
                 contentStyle={{ 

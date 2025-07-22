@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const { id } = context.params;
 
-  try {
+    try {
     const customer = await prisma.customer.findUnique({
       where: { id },
     });
