@@ -271,7 +271,7 @@ export default function ReportsClient({
               />
             </div>
             <div className="overflow-x-auto -mx-4 sm:mx-0">
-              <div className="min-w-[800px] sm:w-full p-4 sm:p-0">
+              <div className="min-w-[1200px] sm:w-full p-4 sm:p-0">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-700">

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from 'sonner'
+import { User } from '@prisma/client'
 
 // Define types
 export type WorkOrder = {
@@ -28,6 +29,8 @@ export type WorkOrder = {
     phone?: string;
     email?: string;
   };
+  assignedTo: User | null;
+  createdBy: User;
 };
 
 type State = {

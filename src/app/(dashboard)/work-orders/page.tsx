@@ -16,11 +16,7 @@ export default function WorkOrdersPage() {
     }
   }, [status])
 
-  useEffect(() => {
-    if (session) {
-      fetchWorkOrders()
-    }
-  }, [session, fetchWorkOrders])
+  
 
   if (status === 'unauthenticated') {
     return null
