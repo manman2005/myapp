@@ -85,12 +85,15 @@ export default async function DashboardPage() {
       }
     })
 
+    const completedWorkOrdersCount = recentWorkOrders.filter(order => order.status === 'COMPLETED').length
+
     return (
       <DashboardClient 
         user={user}
         monthlyIncome={monthlyIncome._sum.amount || 0}
         yearlyIncome={yearlyIncome._sum.amount || 0}
         recentWorkOrders={recentWorkOrders}
+        completedWorkOrdersCount={completedWorkOrdersCount}
       />
     )
   } catch (error) {

@@ -10,6 +10,7 @@ interface DashboardClientProps {
   monthlyIncome: number
   yearlyIncome: number
   recentWorkOrders: WorkOrder[]
+  completedWorkOrdersCount: number
 }
 
 export default function DashboardClient({
@@ -17,6 +18,7 @@ export default function DashboardClient({
   monthlyIncome,
   yearlyIncome,
   recentWorkOrders,
+  completedWorkOrdersCount,
 }: DashboardClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -73,7 +75,7 @@ export default function DashboardClient({
 
         <div className="bg-[#1e293b] rounded-lg p-4">
           <h3 className="text-lg font-medium mb-2 text-gray-200">งานที่เสร็จสิ้น</h3>
-          <p className="text-2xl font-bold text-orange-500">0</p>
+          <p className="text-2xl font-bold text-orange-500">{completedWorkOrdersCount}</p>
           <p className="text-sm text-gray-400">อัตราความสำเร็จ 95%</p>
         </div>
       </div>
