@@ -12,6 +12,7 @@ export type Customer = {
   address: string
   createdAt: string
   updatedAt: string
+  workOrders?: any[]
 }
 
 type State = {

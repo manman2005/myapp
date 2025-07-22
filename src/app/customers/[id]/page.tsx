@@ -84,7 +84,7 @@ export default function CustomerDetailsPage({
             <div className="space-y-2">
               <p>
                 <span className="font-medium">ชื่อ-นามสกุล:</span>{" "}
-                {customer.fullName}
+                {customer.name}
               </p>
               <p>
                 <span className="font-medium">อีเมล:</span> {customer.email}

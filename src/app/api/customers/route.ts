@@ -54,6 +54,9 @@ export async function GET() {
     }
 
     const customers = await prisma.customer.findMany({
+      include: {
+        workOrders: true, // Include related work orders
+      },
       orderBy: {
         createdAt: 'desc'
       }
