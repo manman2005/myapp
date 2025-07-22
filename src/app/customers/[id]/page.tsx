@@ -9,9 +9,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function CustomerDetailsPage({
   params,
@@ -20,7 +29,7 @@ export default function CustomerDetailsPage({
 }) {
   const router = useRouter();
   const { getCustomer } = useCustomer();
-  const id = params.id;
+  const id = React.use(params).id;
   const [customerData, setCustomerData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -36,12 +45,9 @@ export default function CustomerDetailsPage({
 
   if (loading) {
     return (
-      <div className="container mx-auto py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>กำลังโหลด...</CardTitle>
-          </CardHeader>
-        </Card>
+      <div className="container mx-auto py-10 flex justify-center items-center min-h-[calc(100vh-100px)]">
+        <LoadingSpinner />
+        <p className="ml-2 text-gray-700 dark:text-gray-300">กำลังโหลดข้อมูลลูกค้า...</p>
       </div>
     );
   }
@@ -51,13 +57,13 @@ export default function CustomerDetailsPage({
   if (!customer) {
     return (
       <div className="container mx-auto py-10">
-        <Card>
+        <Card className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
           <CardHeader>
             <CardTitle>ไม่พบข้อมูล</CardTitle>
-            <CardDescription>ไม่พบข้อมูลลูกค้าที่ต้องการ</CardDescription>
+            <CardDescription className="text-gray-600 dark:text-gray-400">ไม่พบข้อมูลลูกค้าที่ต้องการ</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => router.back()}>ย้อนกลับ</Button>
+            <Button onClick={() => router.back()} className="bg-blue-600 hover:bg-blue-700 text-white">ย้อนกลับ</Button>
           </CardContent>
         </Card>
       </div>
@@ -66,99 +72,85 @@ export default function CustomerDetailsPage({
 
   return (
     <div className="container mx-auto py-10">
-      <Card>
+      <Card className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-4">
             <div>
-              <CardTitle>ข้อมูลลูกค้า {customer.id}</CardTitle>
-              <CardDescription>
-                สมัครเมื่อ:{" "}
+              <CardTitle className="text-2xl font-bold">ข้อมูลลูกค้า</CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
+                รหัสลูกค้า: {customer.id} | สมัครเมื่อ:{" "}
                 {new Date(customer.createdAt).toLocaleDateString("th-TH")}
               </CardDescription>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-4">ข้อมูลส่วนตัว</h3>
-            <div className="space-y-2">
-              <p>
-                <span className="font-medium">ชื่อ-นามสกุล:</span>{" "}
-                {customer.name}
-              </p>
-              <p>
-                <span className="font-medium">อีเมล:</span> {customer.email}
-              </p>
-              <p>
-                <span className="font-medium">เบอร์โทรศัพท์:</span>{" "}
-                {customer.phone}
-              </p>
-              <p>
-                <span className="font-medium">ที่อยู่:</span>{" "}
-                {customer.address}
-              </p>
+            <div className="flex space-x-2">
+              <Button variant="outline" onClick={() => router.back()} className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                ย้อนกลับ
+              </Button>
+              <Button onClick={() => router.push(`/customers/${id}/edit`)} className="bg-blue-600 hover:bg-blue-700 text-white">
+                แก้ไขข้อมูล
+              </Button>
             </div>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          <section>
+            <h3 className="text-xl font-semibold mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">ข้อมูลส่วนตัว</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-600 dark:text-gray-400">ชื่อ-นามสกุล:</span>
+                <span className="text-lg font-semibold">{customer.name}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-600 dark:text-gray-400">อีเมล:</span>
+                <span className="text-lg font-semibold">{customer.email || '-'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-600 dark:text-gray-400">เบอร์โทรศัพท์:</span>
+                <span className="text-lg font-semibold">{customer.phone || '-'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-600 dark:text-gray-400">ที่อยู่:</span>
+                <span className="text-lg font-semibold">{customer.address || '-'}</span>
+              </div>
+            </div>
+          </section>
 
-          <div>
-            <h3 className="text-lg font-semibold mb-4">ประวัติการซ่อม</h3>
+          <section>
+            <h3 className="text-xl font-semibold mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">ประวัติการซ่อม</h3>
             {customer.workOrders && customer.workOrders.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        รหัสงาน
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        วันที่
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        สถานะ
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        การดำเนินการ
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+              <div className="rounded-md border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50 dark:bg-gray-700">
+                      <TableHead className="w-[100px]">รหัสงาน</TableHead>
+                      <TableHead>วันที่</TableHead>
+                      <TableHead>สถานะ</TableHead>
+                      <TableHead className="text-right">การดำเนินการ</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {customer.workOrders.map((order: any) => (
-                      <tr key={order.id} className="border-b">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {order.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {new Date(order.createdAt).toLocaleDateString("th-TH")}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {order.status}
-                        </td>
-                        <td>
+                      <TableRow key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <TableCell className="font-medium">{order.id}</TableCell>
+                        <TableCell>{new Date(order.createdAt).toLocaleDateString("th-TH")}</TableCell>
+                        <TableCell>{order.status}</TableCell>
+                        <TableCell className="text-right">
                           <Link
                             href={`/work-orders/${order.id}`}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-bold"
+                            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-9 px-4 py-2"
                           >
                             ดูรายละเอียด
                           </Link>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             ) : (
-              <p className="text-gray-500">ยังไม่มีประวัติการซ่อม</p>
+              <p className="text-gray-500 dark:text-gray-400">ยังไม่มีประวัติการซ่อมสำหรับลูกค้ารายนี้</p>
             )}
-          </div>
-
-          <div className="flex justify-end space-x-4 pt-4">
-            <Button variant="outline" onClick={() => router.back()}>
-              ย้อนกลับ
-            </Button>
-            <Button onClick={() => router.push(`/customers/${id}/edit`)}>
-              แก้ไขข้อมูล
-            </Button>
-          </div>
+          </section>
         </CardContent>
       </Card>
     </div>
