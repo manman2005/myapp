@@ -1,17 +1,19 @@
 'use client'
 
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState, useEffect, useMemo } from 'react'
 import { useWorkOrder } from '@/contexts/WorkOrderContext'
 import { useCustomer } from '@/contexts/CustomerContext'
 import { WorkOrderForm } from '@/components/work-orders/WorkOrderForm'
 import { WorkOrderList } from '@/components/work-orders/WorkOrderList'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input' // Import Input component
 
 export default function WorkOrdersClient() {
   const { state: { workOrders, loading: workOrdersLoading, error: workOrdersError }, createWorkOrder, fetchWorkOrders } = useWorkOrder()
   const { state: { customers, loading: customersLoading }, fetchCustomers } = useCustomer()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('') // State for search term
 
   useEffect(() => {
     fetchCustomers()
@@ -24,10 +26,21 @@ export default function WorkOrdersClient() {
       setIsDialogOpen(false)
       await fetchWorkOrders()
     }
+    return success
   }, [createWorkOrder, fetchWorkOrders])
 
   const loading = workOrdersLoading || customersLoading
   const error = workOrdersError
+
+  // Filter work orders based on search term
+  const filteredWorkOrders = useMemo(() => {
+    if (!workOrders) return []
+    return workOrders.filter(order =>
+      order.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.customer && order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+  }, [workOrders, searchTerm])
 
   if (loading) {
     return (
@@ -86,12 +99,21 @@ export default function WorkOrdersClient() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">รายการงานซ่อม</h1>
+        <div className="flex items-center space-x-4">
+          <h1 className="text-2xl font-bold">รายการงานซ่อม</h1>
+          <Input
+            type="text"
+            placeholder="ค้นหางานซ่อม..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
         <Button onClick={() => setIsDialogOpen(true)} disabled={!customers || customers.length === 0} className="bg-green-500 hover:bg-green-600 text-white">
           สร้างงานใหม่
         </Button>
       </div>
-      <WorkOrderList workOrders={workOrders} />
+      <WorkOrderList workOrders={filteredWorkOrders} /> {/* Use filteredWorkOrders */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
