@@ -142,12 +142,20 @@ export const WorkOrderList = React.memo(function WorkOrderList({ workOrders }: W
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                  <Link
-                    href={`/work-orders/${order.id}`}
-                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
-                    ดูรายละเอียด
-                  </Link>
+                  <div className="flex space-x-2">
+                    <Link
+                      href={`/work-orders/${order.id}`}
+                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      ดูรายละเอียด
+                    </Link>
+                    <Link
+                      href={`/work-orders/${order.id}/edit`}
+                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                      แก้ไข
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}
